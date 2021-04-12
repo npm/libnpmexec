@@ -1,0 +1,46 @@
+repository:
+  default_branch: master
+
+branches:
+  - name: *
+    protection:
+      required_pull_request_reviews:
+        required_approving_review_count: 1
+
+teams:
+  - { name: 'cli-team',     permission: 'admin' }
+  - { name: 'robot-write',  permission: 'admin' }
+  - { name: 'robot',        permission: 'pull'  }
+  - { name: 'employees',    permission: 'pull'  }
+  - { name: 'eng',          permission: 'push'  }
+
+labels:
+  - { color: 'E31919', name: 'Bug', description: 'things that need fixing' }
+  - { color: '9013FE', name: 'Question', description: 'further information is requested' }
+  - { color: '4A90E2', name: 'Docs', description: 'this change only modifies documentation' }
+  - { color: 'F8E71C', name: 'Epic', description: 'a larger scope of work that will be tracked in a Project Board' }
+  - { color: '4A4A4A', name: 'Backlog', description: 'a "backlogged" item that will be tracked in a Project Board' }
+  - { color: 'F5A623', name: 'Agenda', description: 'will be discussed at the Open RFC call' }
+  - { color: 'F5A623', name: 'Meeting', description: 'meeting agendas' }
+  - { color: '7ED321', name: 'Enhancement', description: 'new feature or request' }
+  - { color: '417505', name: 'Good First Issue', description: 'good issue or PR for newcomers' }
+  - { color: '4A4A4A', name: 'Duplicate', description: 'another pull request or issues already addresses this' }
+  - { color: '4A4A4A', name: 'Wontfix', description: 'this will not be worked on' }
+  - { color: '343DFF', name: 'Community', description: 'specific to community &/or imported from npm.community' }
+  - { color: '50E3C2', name: 'Registry', description: 'specific to registry implementation' }
+  - { color: 'E3AF50', name: 'Website', description: 'specific to website implementation' }
+  - { color: 'E0AD2D', name: 'Security', description: 'specific to security implementation' }
+  - { color: 'F8A91C', name: 'Ratified', description: 'this RFC is ready for implementation' }
+  - { color: '105DE0', name: 'In Progress', description: 'not ready to merge yet' }
+  - { color: 'D0021B', name: 'Help Wanted', description: 'extra attention is needed' }
+  - { color: 'D0021B', name: 'Needs Discussion', description: 'is pending a discussion' }
+  - { color: 'D0021B', name: 'Needs Tests', description: 'requires tests before merging' }
+  - { color: 'D0021B', name: 'Needs Documentation', description: 'pull request requires docs before merging' }
+  - { color: 'D0021B', name: 'Needs Rebase', description: 'pull request requires rebasing before it can successfully merge' }
+  - { color: 'F5A623', name: 'semver:major', description: 'backwards-incompatible breaking changes' }
+  - { color: '02AAD0', name: 'semver:minor', description: 'new backwards-compatible feature' }
+  - { color: '85D002', name: 'semver:patch', description: 'semver patch level for changes' }
+  - { color: '000000', name: 'Release 6.x', description: 'work is associated with a specific npm 6 release' }
+  - { color: '000000', name: 'Release 7.x', description: 'work is associated with a specific npm 7 release' }
+  - { color: '000000', name: 'Release 8.x', description: 'work is associated with a specific npm 8 release' }
+  - { color: '000000', name: 'Release Next', description: 'work associated with the next npm release' }

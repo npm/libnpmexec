@@ -1,0 +1,41 @@
+{
+  "name": "libnpmexec",
+  "version": "1.0.0",
+  "files": [
+    "index.js"
+  ],
+  "engines": {
+    "node": ">=10"
+  },
+  "description": "npm exec (npx) programmatic API",
+  "repository": "https://github.com/npm/libnpmexec",
+  "keywords": [
+    "npm",
+    "npmcli",
+    "libnpm",
+    "cli",
+    "workspaces",
+    "libnpmexec"
+  ],
+  "author": "npm Inc. <support@npmjs.com>",
+  "contributors": [
+    {
+      "name": "Ruy Adorno",
+      "url": "https://ruyadorno.com",
+      "twitter": "ruyadorno"
+    }
+  ],
+  "license": "ISC",
+  "scripts": {
+    "lint": "eslint index.js",
+    "pretest": "npm run lint",
+    "test": "tap test*.js",
+    "snap": "tap test*.js",
+    "preversion": "npm test",
+    "postversion": "npm publish",
+    "prepublishOnly": "git push origin --follow-tags"
+  },
+  "tap": {
+    "check-coverage": true
+  }
+}
