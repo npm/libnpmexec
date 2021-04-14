@@ -2,7 +2,7 @@
   "name": "libnpmexec",
   "version": "1.0.0",
   "files": [
-    "index.js"
+    "lib"
   ],
   "engines": {
     "node": ">=10"
@@ -27,7 +27,7 @@
   ],
   "license": "ISC",
   "scripts": {
-    "lint": "eslint *.js",
+    "lint": "eslint lib/*.js",
     "pretest": "npm run lint",
     "test": "tap test/*.js",
     "snap": "tap test/*.js",

@@ -2,7 +2,7 @@ const fs = require('fs')
 const { resolve } = require('path')
 const t = require('tap')
 
-const libexec = require('../index.js')
+const libexec = require('../lib/index.js')
 
 const OUTPUT = []
 const baseOpts = {
