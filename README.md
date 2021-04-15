@@ -16,7 +16,31 @@ The `npm exec` (`npx`) Programmatic API
 ```js
 const libExec = require('libnpmexec')
 await libExec({
-  cwd,
+  args: [],
+  call: '',
+  cache: '~./npm',
+  color: false,
+  flatOptions: {
+    audit: false,
+    cache: '~/.npm',
+    registry: 'https://registry.npmjs.org/',
+    // and more options from @npmcli/arborist
+  },
+  localBin: '',
+  log: {
+    http () {},
+    silly () {},
+    warn () {},
+  },
+  globalBin: '',
+  output: console.log,
+  packages: [],
+  path: '',
+  runPath: '',
+  shell: process.platform === 'win32'
+    ? process.env.ComSpec || 'cmd'
+    : process.env.SHELL || 'sh',
+  yes: true,
 })
 ```
 
@@ -25,9 +49,22 @@ await libExec({
 ### `libExec(opts)`
 
 - `opts`:
-  - `pkg`: A valid `package.json` **Object**
+  - `args`: List of pkgs to execute **Array<String>**
+  - `call`: An alternative command to run when using `packages` option **String**
+  - `cache`: The path location to where the npm cache folder is placed **String**
+  - `color`: Output should use color? **Boolean**
+  - `flatOptions`: Options send to [@npmcli/arborist](https://github.com/npm/arborist/) and [pacote](https://github.com/npm/pacote/#options) **Object**
+  - `localBin`: Location to the `node_modules/.bin` folder of the local project **String**
+  - `locationMsg`: Overrides "at location" message when entering interactive mode **String**
+  - `log`: A logger to log messages **Object**
+  - `globalBin`: Location to the global space bin folder, same as: `$(npm bin -g)` **String**
+  - `output`: A function to print output to **Function**
+  - `packages`: A list of packages to be used (possibly fetch from the registry) **Array<String>**
+  - `path`: Location to where to read local project info (`package.json`) **String**
+  - `runPath`: Location to where to execute the script **String**
+  - `shell`: Default shell to be used **String**
+  - `yes`: Should skip download confirmation prompt when fetching missing packages from the registry? **Boolean**
 
 ## LICENSE
 
 [ISC](./LICENSE)
-

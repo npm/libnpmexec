@@ -21,7 +21,6 @@ const baseOpts = {
   color: false,
   flatOptions,
   localBin: '',
-  locationMsg: '',
   log: {
     http () {},
     silly () {},
