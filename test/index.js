@@ -317,6 +317,7 @@ t.test('prompt, accepts', async t => {
   const runPath = path
   const cache = resolve(testdir, 'cache')
   const libexec = t.mock('../lib/index.js', {
+    '@npmcli/ci-detect': () => false,
     read (opts, cb) {
       cb(null, 'y')
     },
