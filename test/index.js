@@ -1,6 +1,7 @@
 const fs = require('fs')
 const { resolve } = require('path')
 const t = require('tap')
+const binLinks = require('bin-links')
 
 const libexec = require('../lib/index.js')
 
@@ -9,27 +10,16 @@ const registryServer = require('./registry/server.js')
 const { registry } = registryServer
 t.test('setup server', { bail: true, buffered: false }, registryServer)
 
-const flatOptions = {
+const baseOpts = {
   audit: false,
   cache: '',
-  registry,
-}
-const baseOpts = {
-  args: [],
   call: '',
-  cache: '',
   color: false,
-  flatOptions,
   localBin: '',
-  log: {
-    http () {},
-    silly () {},
-    warn () {},
-  },
   globalBin: '',
-  output: () => {},
   packages: [],
   path: '',
+  registry,
   runPath: '',
   shell: process.platform === 'win32'
     ? process.env.ComSpec || 'cmd'
@@ -38,24 +28,33 @@ const baseOpts = {
 }
 
 t.test('local pkg', async t => {
+  const pkg = {
+    name: 'pkg',
+    bin: {
+      a: 'index.js',
+    },
+  }
   const path = t.testdir({
     cache: {},
     node_modules: {
-      '.bin': {
-        a: t.fixture('symlink', '../a/index.js'),
-      },
+      '.bin': {},
       a: {
         'index.js': `#!/usr/bin/env node
 require('fs').writeFileSync(process.argv.slice(2)[0], 'LOCAL PKG')`,
       },
     },
-    'package.json': JSON.stringify({ name: 'pkg' }),
+    'package.json': JSON.stringify(pkg),
   })
   const localBin = resolve(path, 'node_modules/.bin')
   const runPath = path
 
-  const executable = resolve(localBin, 'a')
+  const executable = resolve(path, 'node_modules/a')
   fs.chmodSync(executable, 0o775)
+
+  await binLinks({
+    path: resolve(path, 'node_modules/a'),
+    pkg,
+  })
 
   await libexec({
     ...baseOpts,
@@ -70,22 +69,20 @@ require('fs').writeFileSync(process.argv.slice(2)[0], 'LOCAL PKG')`,
 })
 
 t.test('local pkg, must not fetch manifest for avail pkg', async t => {
+  const pkg = {
+    name: '@ruyadorno/create-index',
+    version: '2.0.0',
+    bin: {
+      'create-index': './index.js',
+    },
+  }
   const path = t.testdir({
     cache: {},
     node_modules: {
-      '.bin': {
-        'create-index':
-          t.fixture('symlink', '../@ruyadorno/create-index/index.js'),
-      },
+      '.bin': {},
       '@ruyadorno': {
         'create-index': {
-          'package.json': JSON.stringify({
-            name: '@ruyadorno/create-index',
-            version: '2.0.0',
-            bin: {
-              'create-index': './index.js',
-            },
-          }),
+          'package.json': JSON.stringify(pkg),
           'index.js': `#!/usr/bin/env node
   require('fs').writeFileSync(process.argv.slice(2)[0], 'LOCAL PKG')`,
         },
@@ -101,15 +98,17 @@ t.test('local pkg, must not fetch manifest for avail pkg', async t => {
   const runPath = path
   const cache = resolve(path, 'cache')
 
-  const executable = resolve(path, 'node_modules/.bin/create-index')
+  const executable =
+    resolve(path, 'node_modules/@ruyadorno/create-index/index.js')
   fs.chmodSync(executable, 0o775)
+
+  await binLinks({
+    path: resolve(path, 'node_modules/@ruyadorno/create-index'),
+    pkg,
+  })
 
   await libexec({
     ...baseOpts,
-    flatOptions: {
-      ...flatOptions,
-      cache,
-    },
     cache,
     packages: ['@ruyadorno/create-index'],
     call: 'create-index resfile',
@@ -154,16 +153,21 @@ require('fs').writeFileSync(process.argv.slice(2)[0], 'LOCAL PKG')`,
 })
 
 t.test('global space pkg', async t => {
+  const pkg = {
+    name: 'a',
+    bin: {
+      a: 'index.js',
+    },
+  }
   const path = t.testdir({
     cache: {},
     global: {
       node_modules: {
-        '.bin': {
-          a: t.fixture('symlink', '../a/index.js'),
-        },
+        '.bin': {},
         a: {
           'index.js': `#!/usr/bin/env node
   require('fs').writeFileSync(process.argv.slice(2)[0], 'GLOBAL PKG')`,
+          'package.json': JSON.stringify(pkg),
         },
       },
     },
@@ -171,8 +175,13 @@ t.test('global space pkg', async t => {
   const globalBin = resolve(path, 'global/node_modules/.bin')
   const runPath = path
 
-  const executable = resolve(globalBin, 'a')
+  const executable = resolve(path, 'global/node_modules/a')
   fs.chmodSync(executable, 0o775)
+
+  await binLinks({
+    path: resolve(path, 'global/node_modules/a'),
+    pkg,
+  })
 
   await libexec({
     ...baseOpts,
@@ -205,10 +214,6 @@ t.test('run from registry', async t => {
     ...baseOpts,
     args: ['@ruyadorno/create-index'],
     cache,
-    flatOptions: {
-      ...flatOptions,
-      cache,
-    },
     path,
     runPath,
   })
@@ -235,10 +240,6 @@ t.test('avoid install when exec from registry an available pkg', async t => {
     ...baseOpts,
     args: ['@ruyadorno/create-index'],
     cache,
-    flatOptions: {
-      ...flatOptions,
-      cache,
-    },
     path,
     runPath,
   })
@@ -250,10 +251,6 @@ t.test('avoid install when exec from registry an available pkg', async t => {
     ...baseOpts,
     args: ['@ruyadorno/create-index'],
     cache,
-    flatOptions: {
-      ...flatOptions,
-      cache,
-    },
     path,
     runPath,
   })
@@ -285,12 +282,8 @@ t.test('run multiple from registry', async t => {
   await libexec({
     ...baseOpts,
     packages: ['@ruyadorno/create-test', '@ruyadorno/create-index'],
-    call: ['create-test && create-index'],
+    call: ['create-test; create-index'],
     cache,
-    flatOptions: {
-      ...flatOptions,
-      cache,
-    },
     path,
     runPath,
   })
@@ -334,10 +327,6 @@ t.test('prompt, accepts', async t => {
     ...baseOpts,
     args: ['@ruyadorno/create-index'],
     cache,
-    flatOptions: {
-      ...flatOptions,
-      cache,
-    },
     path,
     runPath,
     yes: undefined,
@@ -369,10 +358,6 @@ t.test('prompt, refuses', async t => {
       ...baseOpts,
       args: ['@ruyadorno/create-index'],
       cache,
-      flatOptions: {
-        ...flatOptions,
-        cache,
-      },
       path,
       runPath,
       yes: undefined,
@@ -405,10 +390,6 @@ t.test('prompt, -n', async t => {
       ...baseOpts,
       args: ['@ruyadorno/create-index'],
       cache,
-      flatOptions: {
-        ...flatOptions,
-        cache,
-      },
       path,
       runPath,
       yes: false,
@@ -443,10 +424,6 @@ t.test('no prompt if no tty', async t => {
     ...baseOpts,
     args: ['@ruyadorno/create-index'],
     cache,
-    flatOptions: {
-      ...flatOptions,
-      cache,
-    },
     path,
     runPath,
     yes: undefined,
@@ -473,10 +450,6 @@ t.test('no prompt if CI', async t => {
     ...baseOpts,
     args: ['@ruyadorno/create-index'],
     cache,
-    flatOptions: {
-      ...flatOptions,
-      cache,
-    },
     path,
     runPath,
     yes: undefined,
@@ -497,29 +470,47 @@ t.test('no prompt if CI, multiple packages', async t => {
   const cache = resolve(testdir, 'cache')
   const libexec = t.mock('../lib/index.js', {
     '@npmcli/ci-detect': () => true,
-  })
-  const log = {
-    ...baseOpts.log,
-    warn (title, msg) {
-      t.equal(title, 'exec', 'should warn exec title')
-      const expected = 'The following packages were not found and will be ' +
-        'installed: @ruyadorno/create-index, @ruyadorno/create-test'
-      t.equal(msg, expected, 'should warn installing pkg')
+    'proc-log': {
+      warn (title, msg) {
+        t.equal(title, 'exec', 'should warn exec title')
+        const expected = 'The following packages were not found and will be ' +
+          'installed: @ruyadorno/create-index, @ruyadorno/create-test'
+        t.equal(msg, expected, 'should warn installing pkg')
+      },
     },
-  }
+  })
 
   await libexec({
     ...baseOpts,
     call: 'create-index',
     packages: ['@ruyadorno/create-index', '@ruyadorno/create-test'],
     cache,
-    flatOptions: {
-      ...flatOptions,
-      cache,
-    },
-    log,
     path,
     runPath,
     yes: undefined,
   })
+})
+
+t.test('sane defaults', async t => {
+  const testdir = t.testdir({
+    cache: {},
+    work: {},
+  })
+  const cache = resolve(testdir, 'cache')
+  const workdir = resolve(testdir, 'work')
+
+  const cwd = process.cwd()
+  process.chdir(workdir)
+  t.teardown(() => {
+    process.chdir(cwd)
+  })
+
+  await libexec({
+    args: ['@ruyadorno/create-index'],
+    cache,
+    yes: true,
+  })
+
+  t.ok(fs.statSync(resolve(workdir, 'index.js')).isFile(),
+    'ran create-index pkg')
 })

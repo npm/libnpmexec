@@ -1,6 +1,5 @@
 const t = require('tap')
 
-let OUTPUT = []
 const baseOpts = {
   args: [],
   call: '',
@@ -9,9 +8,6 @@ const baseOpts = {
   log: {
     warn () {},
   },
-  output: msg => {
-    OUTPUT.push(msg)
-  },
   path: '',
   pathArr: [''],
   runPath: '',
@@ -19,10 +15,6 @@ const baseOpts = {
     ? process.env.ComSpec || 'cmd'
     : process.env.SHELL || 'sh',
 }
-
-t.afterEach(() => {
-  OUTPUT = []
-})
 
 t.test('disable, enable log progress', t => {
   t.plan(3)
@@ -81,7 +73,15 @@ t.test('colorized interactive mode msg', t => {
     '../lib/no-tty.js': () => false,
   })
 
-  runScript({ ...baseOpts, runPath: '/foo/', color: true })
+  const OUTPUT = []
+  runScript({
+    ...baseOpts,
+    output: msg => {
+      OUTPUT.push(msg)
+    },
+    runPath: '/foo/',
+    color: true,
+  })
     .then(() => {
       t.matchSnapshot(OUTPUT.join('\n'), 'should print colorized output')
     })
@@ -101,7 +101,14 @@ t.test('no color interactive mode msg', t => {
     '../lib/no-tty.js': () => false,
   })
 
-  runScript({ ...baseOpts, runPath: '/foo/' })
+  const OUTPUT = []
+  runScript({
+    ...baseOpts,
+    output: msg => {
+      OUTPUT.push(msg)
+    },
+    runPath: '/foo/',
+  })
     .then(() => {
       t.matchSnapshot(OUTPUT.join('\n'), 'should print non-colorized output')
     })
