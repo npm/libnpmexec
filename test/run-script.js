@@ -111,28 +111,17 @@ t.test('no color interactive mode msg', t => {
 })
 
 t.test('no tty', t => {
-  t.plan(2)
+  t.plan(1)
 
   const runScript = t.mock('../lib/run-script.js', {
     '@npmcli/ci-detect': () => false,
     '@npmcli/run-script': async () => {
-      throw new Error('should not call run-script')
+      t.ok('should call run-script')
     },
     '../lib/no-tty.js': () => true,
   })
-  const log = {
-    ...baseOpts.log,
-    warn (title, msg) {
-      t.equal(title, 'exec', 'should have expected title')
-      t.equal(
-        msg,
-        'Interactive mode disabled in no TTY',
-        'should have expected no tty message'
-      )
-    },
-  }
 
-  runScript({ ...baseOpts, log })
+  runScript(baseOpts)
 })
 
 t.test('ci env', t => {
