@@ -4,7 +4,6 @@ const baseOpts = {
   args: [],
   call: '',
   color: false,
-  flatOptions: {},
   log: {
     warn () {},
   },
