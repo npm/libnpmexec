@@ -17,7 +17,7 @@ The `npm exec` (`npx`) Programmatic API
 const libexec = require('libnpmexec')
 await libexec({
   args: ['yosay', 'Bom dia!'],
-  cache: '~./npm',
+  cache: '~/.npm',
   yes: true,
 })
 ```
