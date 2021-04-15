@@ -58,7 +58,7 @@ jobs:
       #   Simply run the tests for the project.
       ################################################################################
       - name: Run tests
-        run: npm test -- --no-coverage
+        run: npm test -- --no-coverage -c
 
       ################################################################################
       # Run coverage check
@@ -74,7 +74,7 @@ jobs:
       ################################################################################
       - name: Run coverage report
         if: github.event_name == 'push' && matrix.node-version == '12.x' && matrix.os == 'ubuntu-latest'
-        run: npm test
+        run: npm test -- -c
         env:
           # The environment variable name is leveraged by `tap`
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
