@@ -282,7 +282,7 @@ t.test('run multiple from registry', async t => {
   await libexec({
     ...baseOpts,
     packages: ['@ruyadorno/create-test', '@ruyadorno/create-index'],
-    call: ['create-test; create-index'],
+    call: ['create-test && create-index'],
     cache,
     path,
     runPath,
