@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.0.1
+
+- Fix `scriptShell` option name.
+
 ## v1.0.0
 
 - Initial implementation, moves the code that used to live in the **npm cli**,
