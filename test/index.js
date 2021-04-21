@@ -21,7 +21,7 @@ const baseOpts = {
   path: '',
   registry,
   runPath: '',
-  shell: process.platform === 'win32'
+  scriptShell: process.platform === 'win32'
     ? process.env.ComSpec || 'cmd'
     : process.env.SHELL || 'sh',
   yes: true,
