@@ -515,3 +515,77 @@ t.test('sane defaults', async t => {
   t.ok(fs.statSync(resolve(workdir, 'index.js')).isFile(),
     'ran create-index pkg')
 })
+
+t.only('workspaces', async t => {
+  const pkg = {
+    name: '@ruyadorno/create-index',
+    version: '2.0.0',
+    bin: {
+      'create-index': './index.js',
+    },
+  }
+  const path = t.testdir({
+    cache: {},
+    node_modules: {
+      '.bin': {},
+      '@ruyadorno': {
+        'create-index': {
+          'package.json': JSON.stringify(pkg),
+          'index.js': `#!/usr/bin/env node
+  require('fs').writeFileSync('resfile', 'LOCAL PKG')`,
+        },
+      },
+      a: t.fixture('symlink', '../a'),
+    },
+    'package.json': JSON.stringify({
+      name: 'project',
+      workspaces: ['a'],
+    }),
+    a: {
+      'package.json': JSON.stringify({
+        name: 'a',
+        version: '1.0.0',
+        dependencies: {
+          '@ruyadorno/create-index': '^2.0.0',
+        },
+      }),
+    }
+  })
+  const runPath = path
+  const cache = resolve(path, 'cache')
+
+  const executable =
+    resolve(path, 'node_modules/@ruyadorno/create-index/index.js')
+  fs.chmodSync(executable, 0o775)
+
+  await binLinks({
+    path: resolve(path, 'node_modules/@ruyadorno/create-index'),
+    pkg,
+  })
+
+  // runs at the project level
+  await libexec({
+    ...baseOpts,
+    args: ['create-index'],
+    localBin: resolve(path, 'node_modules/.bin'),
+    cache,
+    path,
+    runPath,
+  })
+
+  const res = fs.readFileSync(resolve(path, 'resfile')).toString()
+  t.equal(res, 'LOCAL PKG', 'should run existing bin from project level')
+
+  // runs at the child workspace level
+  await libexec({
+    ...baseOpts,
+    args: ['create-index'],
+    cache,
+    localBin: resolve(path, 'a/node_modules/.bin'),
+    path: resolve(path, 'a'),
+    runPath: resolve(path, 'a'),
+  })
+
+  const wRes = fs.readFileSync(resolve(path, 'a/resfile')).toString()
+  t.equal(wRes, 'LOCAL PKG', 'should run existing bin from workspace level')
+})
