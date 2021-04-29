@@ -58,6 +58,7 @@
     "pacote": "^11.3.1",
     "proc-log": "^1.0.0",
     "read": "^1.0.7",
-    "read-package-json-fast": "^2.0.2"
+    "read-package-json-fast": "^2.0.2",
+    "walk-up-path": "^1.0.0"
   }
 }
