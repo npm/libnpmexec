@@ -21,9 +21,7 @@ const baseOpts = {
   path: '',
   registry,
   runPath: '',
-  scriptShell: process.platform === 'win32'
-    ? process.env.ComSpec || 'cmd'
-    : process.env.SHELL || 'sh',
+  scriptShell: undefined,
   yes: true,
 }
 
@@ -516,7 +514,50 @@ t.test('sane defaults', async t => {
     'ran create-index pkg')
 })
 
-t.only('workspaces', async t => {
+t.test('scriptShell default value', t => {
+  t.test('/bin/sh platforms', t => {
+    t.plan(1)
+    const libexec = t.mock('../lib/index.js', {
+      '../lib/is-windows.js': false,
+      '../lib/run-script.js': (opt) => {
+        t.equal(opt.scriptShell, 'sh', 'should use expected shell value')
+      },
+    })
+    libexec({ args: [], runPath: t.testDirName })
+  })
+
+  t.test('win32 defined ComSpec env var', t => {
+    t.plan(1)
+    const comspec = process.env.ComSpec
+    process.env.ComSpec = 'CMD'
+    const libexec = t.mock('../lib/index.js', {
+      '../lib/is-windows.js': true,
+      '../lib/run-script.js': ({ scriptShell }) => {
+        t.equal(scriptShell, 'CMD', 'should use expected ComSpec value')
+        process.env.ComSpec = comspec
+      },
+    })
+    libexec({ args: [], runPath: t.testDirName })
+  })
+
+  t.test('win32 cmd', t => {
+    t.plan(1)
+    const comspec = process.env.ComSpec
+    process.env.ComSpec = ''
+    const libexec = t.mock('../lib/index.js', {
+      '../lib/is-windows.js': true,
+      '../lib/run-script.js': ({ scriptShell }) => {
+        t.equal(scriptShell, 'cmd', 'should use expected cmd default value')
+        process.env.ComSpec = comspec
+      },
+    })
+    libexec({ args: [], runPath: t.testDirName })
+  })
+
+  t.end()
+})
+
+t.test('workspaces', async t => {
   const pkg = {
     name: '@ruyadorno/create-index',
     version: '2.0.0',
@@ -549,7 +590,7 @@ t.only('workspaces', async t => {
           '@ruyadorno/create-index': '^2.0.0',
         },
       }),
-    }
+    },
   })
   const runPath = path
   const cache = resolve(path, 'cache')
