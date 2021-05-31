@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.2.0
+
+- Added a default value to `scriptShell` option
+
 ## v1.1.0
 
 - Add add walk up dir lookup logic to satisfy local bins,
