@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.0.0
+
+- Added a new required `npxCache` option
+
 ## v1.2.0
 
 - Added a default value to `scriptShell` option

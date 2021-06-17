@@ -17,7 +17,8 @@ The `npm exec` (`npx`) Programmatic API
 const libexec = require('libnpmexec')
 await libexec({
   args: ['yosay', 'Bom dia!'],
-  cache: '~/.npm',
+  cache: '~/.npm/_cacache',
+  npxCache: '~/.npm/_npx',
   yes: true,
 })
 ```
@@ -30,6 +31,7 @@ await libexec({
   - `args`: List of pkgs to execute **Array<String>**, defaults to `[]`
   - `call`: An alternative command to run when using `packages` option **String**, defaults to empty string.
   - `cache`: The path location to where the npm cache folder is placed **String**
+  - `npxCache`: The path location to where the npx cache folder is placed **String**
   - `color`: Output should use color? **Boolean**, defaults to `false`
   - `localBin`: Location to the `node_modules/.bin` folder of the local project to start scanning for bin files **String**, defaults to `./node_modules/.bin`. **libexec** will walk up the directory structure looking for `node_modules/.bin` folders in parent folders that might satisfy the current `arg` and will use that bin if found.
   - `locationMsg`: Overrides "at location" message when entering interactive mode **String**
