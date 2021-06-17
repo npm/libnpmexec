@@ -12,7 +12,6 @@ t.test('setup server', { bail: true, buffered: false }, registryServer)
 
 const baseOpts = {
   audit: false,
-  cache: '',
   call: '',
   color: false,
   localBin: '',
@@ -34,6 +33,7 @@ t.test('local pkg', async t => {
   }
   const path = t.testdir({
     cache: {},
+    npxCache: {},
     node_modules: {
       '.bin': {},
       a: {
@@ -76,6 +76,7 @@ t.test('local pkg, must not fetch manifest for avail pkg', async t => {
   }
   const path = t.testdir({
     cache: {},
+    npxCache: {},
     node_modules: {
       '.bin': {},
       '@ruyadorno': {
@@ -95,6 +96,7 @@ t.test('local pkg, must not fetch manifest for avail pkg', async t => {
   })
   const runPath = path
   const cache = resolve(path, 'cache')
+  const npxCache = resolve(path, 'npxCache')
 
   const executable =
     resolve(path, 'node_modules/@ruyadorno/create-index/index.js')
@@ -108,6 +110,7 @@ t.test('local pkg, must not fetch manifest for avail pkg', async t => {
   await libexec({
     ...baseOpts,
     cache,
+    npxCache,
     packages: ['@ruyadorno/create-index'],
     call: 'create-index resfile',
     path,
@@ -121,6 +124,7 @@ t.test('local pkg, must not fetch manifest for avail pkg', async t => {
 t.test('local file system path', async t => {
   const path = t.testdir({
     cache: {},
+    npxCache: {},
     a: {
       'package.json': JSON.stringify({
         name: 'a',
@@ -134,6 +138,7 @@ require('fs').writeFileSync(process.argv.slice(2)[0], 'LOCAL PKG')`,
   })
   const runPath = path
   const cache = resolve(path, 'cache')
+  const npxCache = resolve(path, 'npxCache')
 
   const executable = resolve(path, 'a/index.js')
   fs.chmodSync(executable, 0o775)
@@ -142,6 +147,7 @@ require('fs').writeFileSync(process.argv.slice(2)[0], 'LOCAL PKG')`,
     ...baseOpts,
     args: [`file:${resolve(path, 'a')}`, 'resfile'],
     cache,
+    npxCache,
     path,
     runPath,
   })
@@ -159,6 +165,7 @@ t.test('global space pkg', async t => {
   }
   const path = t.testdir({
     cache: {},
+    npxCache: {},
     global: {
       node_modules: {
         '.bin': {},
@@ -196,11 +203,13 @@ t.test('global space pkg', async t => {
 t.test('run from registry', async t => {
   const testdir = t.testdir({
     cache: {},
+    npxCache: {},
     work: {},
   })
   const path = resolve(testdir, 'work')
   const runPath = path
   const cache = resolve(testdir, 'cache')
+  const npxCache = resolve(testdir, 'npxCache')
 
   t.throws(
     () => fs.statSync(resolve(path, 'index.js')),
@@ -212,6 +221,7 @@ t.test('run from registry', async t => {
     ...baseOpts,
     args: ['@ruyadorno/create-index'],
     cache,
+    npxCache,
     path,
     runPath,
   })
@@ -222,11 +232,13 @@ t.test('run from registry', async t => {
 t.test('avoid install when exec from registry an available pkg', async t => {
   const testdir = t.testdir({
     cache: {},
+    npxCache: {},
     work: {},
   })
   const path = resolve(testdir, 'work')
   const runPath = path
   const cache = resolve(testdir, 'cache')
+  const npxCache = resolve(testdir, 'npxCache')
 
   t.throws(
     () => fs.statSync(resolve(path, 'index.js')),
@@ -238,6 +250,7 @@ t.test('avoid install when exec from registry an available pkg', async t => {
     ...baseOpts,
     args: ['@ruyadorno/create-index'],
     cache,
+    npxCache,
     path,
     runPath,
   })
@@ -249,6 +262,7 @@ t.test('avoid install when exec from registry an available pkg', async t => {
     ...baseOpts,
     args: ['@ruyadorno/create-index'],
     cache,
+    npxCache,
     path,
     runPath,
   })
@@ -259,11 +273,13 @@ t.test('avoid install when exec from registry an available pkg', async t => {
 t.test('run multiple from registry', async t => {
   const testdir = t.testdir({
     cache: {},
+    npxCache: {},
     work: {},
   })
   const path = resolve(testdir, 'work')
   const runPath = path
   const cache = resolve(testdir, 'cache')
+  const npxCache = resolve(testdir, 'npxCache')
 
   t.throws(
     () => fs.statSync(resolve(path, 'index.js')),
@@ -282,6 +298,7 @@ t.test('run multiple from registry', async t => {
     packages: ['@ruyadorno/create-test', '@ruyadorno/create-index'],
     call: ['create-test && create-index'],
     cache,
+    npxCache,
     path,
     runPath,
   })
@@ -309,11 +326,13 @@ t.test('no args', async t => {
 t.test('prompt, accepts', async t => {
   const testdir = t.testdir({
     cache: {},
+    npxCache: {},
     work: {},
   })
   const path = resolve(testdir, 'work')
   const runPath = path
   const cache = resolve(testdir, 'cache')
+  const npxCache = resolve(testdir, 'npxCache')
   const libexec = t.mock('../lib/index.js', {
     '@npmcli/ci-detect': () => false,
     read (opts, cb) {
@@ -326,24 +345,27 @@ t.test('prompt, accepts', async t => {
     ...baseOpts,
     args: ['@ruyadorno/create-index'],
     cache,
+    npxCache,
     path,
     runPath,
     yes: undefined,
   })
 
-  const installedDir = resolve(cache,
-    '_npx/0e8e15840a234288/node_modules/@ruyadorno/create-index/package.json')
+  const installedDir = resolve(npxCache,
+    '0e8e15840a234288/node_modules/@ruyadorno/create-index/package.json')
   t.ok(fs.statSync(installedDir).isFile(), 'installed required packages')
 })
 
 t.test('prompt, refuses', async t => {
   const testdir = t.testdir({
     cache: {},
+    npxCache: {},
     work: {},
   })
   const path = resolve(testdir, 'work')
   const runPath = path
   const cache = resolve(testdir, 'cache')
+  const npxCache = resolve(testdir, 'npxCache')
   const libexec = t.mock('../lib/index.js', {
     '@npmcli/ci-detect': () => false,
     read (opts, cb) {
@@ -357,6 +379,7 @@ t.test('prompt, refuses', async t => {
       ...baseOpts,
       args: ['@ruyadorno/create-index'],
       cache,
+      npxCache,
       path,
       runPath,
       yes: undefined,
@@ -365,8 +388,8 @@ t.test('prompt, refuses', async t => {
     'should throw with canceled error'
   )
 
-  const installedDir = resolve(cache,
-    '_npx/0e8e15840a234288/node_modules/@ruyadorno/create-index/package.json')
+  const installedDir = resolve(npxCache,
+    '0e8e15840a234288/node_modules/@ruyadorno/create-index/package.json')
 
   t.throws(
     () => fs.statSync(installedDir),
@@ -378,17 +401,20 @@ t.test('prompt, refuses', async t => {
 t.test('prompt, -n', async t => {
   const testdir = t.testdir({
     cache: {},
+    npxCache: {},
     work: {},
   })
   const path = resolve(testdir, 'work')
   const runPath = path
   const cache = resolve(testdir, 'cache')
+  const npxCache = resolve(testdir, 'npxCache')
 
   await t.rejects(
     libexec({
       ...baseOpts,
       args: ['@ruyadorno/create-index'],
       cache,
+      npxCache,
       path,
       runPath,
       yes: false,
@@ -397,8 +423,8 @@ t.test('prompt, -n', async t => {
     'should throw with canceled error'
   )
 
-  const installedDir = resolve(cache,
-    '_npx/0e8e15840a234288/node_modules/@ruyadorno/create-index/package.json')
+  const installedDir = resolve(npxCache,
+    '0e8e15840a234288/node_modules/@ruyadorno/create-index/package.json')
 
   t.throws(
     () => fs.statSync(installedDir),
@@ -410,11 +436,13 @@ t.test('prompt, -n', async t => {
 t.test('no prompt if no tty', async t => {
   const testdir = t.testdir({
     cache: {},
+    npxCache: {},
     work: {},
   })
   const path = resolve(testdir, 'work')
   const runPath = path
   const cache = resolve(testdir, 'cache')
+  const npxCache = resolve(testdir, 'npxCache')
   const libexec = t.mock('../lib/index.js', {
     '../lib/no-tty.js': () => true,
   })
@@ -423,24 +451,27 @@ t.test('no prompt if no tty', async t => {
     ...baseOpts,
     args: ['@ruyadorno/create-index'],
     cache,
+    npxCache,
     path,
     runPath,
     yes: undefined,
   })
 
-  const installedDir = resolve(cache,
-    '_npx/0e8e15840a234288/node_modules/@ruyadorno/create-index/package.json')
+  const installedDir = resolve(npxCache,
+    '0e8e15840a234288/node_modules/@ruyadorno/create-index/package.json')
   t.ok(fs.statSync(installedDir).isFile(), 'installed required packages')
 })
 
 t.test('no prompt if CI', async t => {
   const testdir = t.testdir({
     cache: {},
+    npxCache: {},
     work: {},
   })
   const path = resolve(testdir, 'work')
   const runPath = path
   const cache = resolve(testdir, 'cache')
+  const npxCache = resolve(testdir, 'npxCache')
   const libexec = t.mock('../lib/index.js', {
     '@npmcli/ci-detect': () => true,
   })
@@ -449,24 +480,27 @@ t.test('no prompt if CI', async t => {
     ...baseOpts,
     args: ['@ruyadorno/create-index'],
     cache,
+    npxCache,
     path,
     runPath,
     yes: undefined,
   })
 
-  const installedDir = resolve(cache,
-    '_npx/0e8e15840a234288/node_modules/@ruyadorno/create-index/package.json')
+  const installedDir = resolve(npxCache,
+    '0e8e15840a234288/node_modules/@ruyadorno/create-index/package.json')
   t.ok(fs.statSync(installedDir).isFile(), 'installed required packages')
 })
 
 t.test('no prompt if CI, multiple packages', async t => {
   const testdir = t.testdir({
     cache: {},
+    npxCache: {},
     work: {},
   })
   const path = resolve(testdir, 'work')
   const runPath = path
   const cache = resolve(testdir, 'cache')
+  const npxCache = resolve(testdir, 'npxCache')
   const libexec = t.mock('../lib/index.js', {
     '@npmcli/ci-detect': () => true,
     'proc-log': {
@@ -484,6 +518,7 @@ t.test('no prompt if CI, multiple packages', async t => {
     call: 'create-index',
     packages: ['@ruyadorno/create-index', '@ruyadorno/create-test'],
     cache,
+    npxCache,
     path,
     runPath,
     yes: undefined,
@@ -493,9 +528,11 @@ t.test('no prompt if CI, multiple packages', async t => {
 t.test('sane defaults', async t => {
   const testdir = t.testdir({
     cache: {},
+    npxCache: {},
     work: {},
   })
   const cache = resolve(testdir, 'cache')
+  const npxCache = resolve(testdir, 'npxCache')
   const workdir = resolve(testdir, 'work')
 
   const cwd = process.cwd()
@@ -507,6 +544,7 @@ t.test('sane defaults', async t => {
   await libexec({
     args: ['@ruyadorno/create-index'],
     cache,
+    npxCache,
     yes: true,
   })
 
@@ -567,6 +605,7 @@ t.test('workspaces', async t => {
   }
   const path = t.testdir({
     cache: {},
+    npxCache: {},
     node_modules: {
       '.bin': {},
       '@ruyadorno': {
@@ -594,6 +633,7 @@ t.test('workspaces', async t => {
   })
   const runPath = path
   const cache = resolve(path, 'cache')
+  const npxCache = resolve(path, 'npxCache')
 
   const executable =
     resolve(path, 'node_modules/@ruyadorno/create-index/index.js')
@@ -610,6 +650,7 @@ t.test('workspaces', async t => {
     args: ['create-index'],
     localBin: resolve(path, 'node_modules/.bin'),
     cache,
+    npxCache,
     path,
     runPath,
   })
@@ -622,6 +663,7 @@ t.test('workspaces', async t => {
     ...baseOpts,
     args: ['create-index'],
     cache,
+    npxCache,
     localBin: resolve(path, 'a/node_modules/.bin'),
     path: resolve(path, 'a'),
     runPath: resolve(path, 'a'),
