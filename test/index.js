@@ -333,27 +333,59 @@ t.test('prompt, accepts', async t => {
   const runPath = path
   const cache = resolve(testdir, 'cache')
   const npxCache = resolve(testdir, 'npxCache')
-  const libexec = t.mock('../lib/index.js', {
-    '@npmcli/ci-detect': () => false,
-    read (opts, cb) {
-      cb(null, 'y')
-    },
-    '../lib/no-tty.js': () => false,
+  t.test('with clearProgress function', async t => {
+    const libexec = t.mock('../lib/index.js', {
+      '@npmcli/ci-detect': () => false,
+      'proc-log': {
+        clearProgress () {
+          t.ok(true, 'should call clearProgress function')
+        }
+      },
+      read (opts, cb) {
+        cb(null, 'y')
+      },
+      '../lib/no-tty.js': () => false,
+    })
+
+    await libexec({
+      ...baseOpts,
+      args: ['@ruyadorno/create-index'],
+      cache,
+      npxCache,
+      path,
+      runPath,
+      yes: undefined,
+    })
+
+    const installedDir = resolve(npxCache,
+      '0e8e15840a234288/node_modules/@ruyadorno/create-index/package.json')
+    t.ok(fs.statSync(installedDir).isFile(), 'installed required packages')
   })
 
-  await libexec({
-    ...baseOpts,
-    args: ['@ruyadorno/create-index'],
-    cache,
-    npxCache,
-    path,
-    runPath,
-    yes: undefined,
-  })
+  t.test('without clearProgress function', async t => {
+    const libexec = t.mock('../lib/index.js', {
+      '@npmcli/ci-detect': () => false,
+      'proc-log': {},
+      read (opts, cb) {
+        cb(null, 'y')
+      },
+      '../lib/no-tty.js': () => false,
+    })
 
-  const installedDir = resolve(npxCache,
-    '0e8e15840a234288/node_modules/@ruyadorno/create-index/package.json')
-  t.ok(fs.statSync(installedDir).isFile(), 'installed required packages')
+    await libexec({
+      ...baseOpts,
+      args: ['@ruyadorno/create-index'],
+      cache,
+      npxCache,
+      path,
+      runPath,
+      yes: undefined,
+    })
+
+    const installedDir = resolve(npxCache,
+      '0e8e15840a234288/node_modules/@ruyadorno/create-index/package.json')
+    t.ok(fs.statSync(installedDir).isFile(), 'installed required packages')
+  })
 })
 
 t.test('prompt, refuses', async t => {
@@ -366,36 +398,77 @@ t.test('prompt, refuses', async t => {
   const runPath = path
   const cache = resolve(testdir, 'cache')
   const npxCache = resolve(testdir, 'npxCache')
-  const libexec = t.mock('../lib/index.js', {
-    '@npmcli/ci-detect': () => false,
-    read (opts, cb) {
-      cb(null, 'n')
-    },
-    '../lib/no-tty.js': () => false,
+  t.test('with clearProgress function', async t => {
+    const libexec = t.mock('../lib/index.js', {
+      '@npmcli/ci-detect': () => false,
+      'proc-log': {
+        clearProgress () {
+          t.ok(true, 'should call clearProgress function')
+        }
+      },
+      read (opts, cb) {
+        cb(null, 'n')
+      },
+      '../lib/no-tty.js': () => false,
+    })
+
+    await t.rejects(
+      libexec({
+        ...baseOpts,
+        args: ['@ruyadorno/create-index'],
+        cache,
+        npxCache,
+        path,
+        runPath,
+        yes: undefined,
+      }),
+      /canceled/,
+      'should throw with canceled error'
+    )
+
+    const installedDir = resolve(npxCache,
+      '0e8e15840a234288/node_modules/@ruyadorno/create-index/package.json')
+
+    t.throws(
+      () => fs.statSync(installedDir),
+      { code: 'ENOENT' },
+      'should not have installed required packages'
+    )
   })
 
-  await t.rejects(
-    libexec({
-      ...baseOpts,
-      args: ['@ruyadorno/create-index'],
-      cache,
-      npxCache,
-      path,
-      runPath,
-      yes: undefined,
-    }),
-    /canceled/,
-    'should throw with canceled error'
-  )
+  t.test('without clearProgress function', async t => {
+    const libexec = t.mock('../lib/index.js', {
+      '@npmcli/ci-detect': () => false,
+      'proc-log': {},
+      read (opts, cb) {
+        cb(null, 'n')
+      },
+      '../lib/no-tty.js': () => false,
+    })
 
-  const installedDir = resolve(npxCache,
-    '0e8e15840a234288/node_modules/@ruyadorno/create-index/package.json')
+    await t.rejects(
+      libexec({
+        ...baseOpts,
+        args: ['@ruyadorno/create-index'],
+        cache,
+        npxCache,
+        path,
+        runPath,
+        yes: undefined,
+      }),
+      /canceled/,
+      'should throw with canceled error'
+    )
 
-  t.throws(
-    () => fs.statSync(installedDir),
-    { code: 'ENOENT' },
-    'should not have installed required packages'
-  )
+    const installedDir = resolve(npxCache,
+      '0e8e15840a234288/node_modules/@ruyadorno/create-index/package.json')
+
+    t.throws(
+      () => fs.statSync(installedDir),
+      { code: 'ENOENT' },
+      'should not have installed required packages'
+    )
+  })
 })
 
 t.test('prompt, -n', async t => {
