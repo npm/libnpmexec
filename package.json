@@ -37,6 +37,7 @@
     "prepublishOnly": "git push origin --follow-tags"
   },
   "tap": {
+    "color": true,
     "check-coverage": true
   },
   "devDependencies": {
